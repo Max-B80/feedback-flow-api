@@ -1,9 +1,17 @@
-import express from "express";
-import { createFeatureRequest } from "../controllers/request.controller.js";
+import { Router } from "express";
+import { 
+  createRequest, 
+  getAllRequests, 
+  upvoteRequest 
+} from "../controllers/request.controller.js";
+import { validateBody } from "../middleware/validate.middleware.js";
+import { createRequestSchema } from "../schemas/request.schema.js";
+import { upvoteSchema } from "../schemas/upvote.schema.js";
 
-const router = express.Router();
+const router = Router();
 
-// Define the POST endpoint for requests
-router.post("/requests", createFeatureRequest);
+router.post("/requests", validateBody(createRequestSchema), createRequest);
+router.get("/requests", getAllRequests);
+router.post("/requests/:id/upvote", validateBody(upvoteSchema), upvoteRequest);
 
 export default router;

@@ -1,6 +1,6 @@
 # 🌊 FeedbackFlow API
 
-A modular, secure Node.js & Express REST API designed for embedded feature request boards. This API allows project owners to manage projects and gather user feature requests.
+A modular, type-safe, and secure Node.js & Express REST API built with TypeScript, Prisma v5, PostgreSQL, and Zod. Designed for embedded feature request boards, this API enables developers to manage user suggestions and feature feedback cleanly and efficiently.
 
 ---
 
@@ -8,88 +8,88 @@ A modular, secure Node.js & Express REST API designed for embedded feature reque
 
 #### 🌅 Morning Plan & Risk Assessment
 * **Top 3 Tasks Planned:**
-  1. Set up the modular folder structure (`src/`) and configure TypeScript (`tsconfig.json`).
-  2. Create Zod validation schemas for `Project` and `FeatureRequest` entities.
-  3. Implement Express routes and controllers for project creation and retrieval.
+  1. Set up the modular folder structure (`src/`) and configure TypeScript (`tsconfig.json`) for ESM compatibility.
+  2. Create Zod validation schemas and global error-handling middleware.
+  3. Implement Express routes, Prisma controllers, and PostgreSQL database migrations for feature requests.
 * **Most Obvious Obstacle/Risk:** 
-  * Time management before 3:00 PM due to attending an inline language course today.
+  * Strict time constraints and resolving environment-specific CLI/TypeScript compilation errors.
 * **Risk Resolution Plan:** 
-  * Break development into small, focused micro-tasks (like defining schemas first) so progress continues smoothly around the class schedule.
+  * Executed incremental micro-tasks (schema updates -> migration -> middleware -> route testing) and validated each stage using `npx tsc --noEmit` and Postman.
 
 ---
 
-### 🌇 End-of-Day Review (After ILP)
+### 🌇 End-of-Day Review
 * **Tasks Completed:**
-  * Created GitHub repository and established local project configuration with Node.js and TypeScript.
-  * Designed the modular folder layout (`config`, `controllers`, `routes`, `schemas`).
-  * Defined API architecture, endpoint specs, and Entity-Relationship Diagram (ERD).
+  * Configured full ESM environment using Node.js v24, TypeScript, and Prisma v5.19.1.
+  * Configured PostgreSQL schema with `User` and `FeatureRequest` entities (One-to-Many and Many-to-Many relationships).
+  * Built custom Zod-based validation middleware (`validateBody`) and an Express Global Error Handler.
+  * Verified request creation (`POST /api/requests`) and data retrieval (`GET /api/requests`) using Postman integration tests.
 * **Biggest Lesson Learned:**
-  * TypeScript types only validate code at compile time, which is why runtime validation libraries like Zod are essential for securing live API requests.
-* **Top Priority for Tomorrow:**
-  * Connect the database layer, implement the remaining `FeatureRequest` routes, and test end-to-end request flows.
+  * Runtime validation with Zod combined with Prisma foreign-key constraints ensures robust error handling (`400 Bad Request` and `404 Not Found`) before unexpected database exceptions occur.
+* **Top Priority for Next Steps:**
+  * Implement the upvoting endpoint (`POST /api/requests/:id/upvote`) and integrate user authentication middleware.
 
 ---
 
 ## 📌 Project Overview & Scope
 
-FeedbackFlow provides a light backend for SaaS developers to collect user feedback. The system manages two main related entities:
-1. **`Project`**: Represents an app or service created by a developer.
-2. **`FeatureRequest`**: Represents user-submitted suggestions linked directly to a specific `Project`.
+FeedbackFlow provides a lightweight backend for SaaS developers and creators to collect user feedback. The system manages core entities and relationships:
 
-This API is built using **Node.js**, **Express**, **TypeScript/JavaScript**, and **Zod** for runtime input validation and API security.
-
----
-
-## 🎯 Target Audience & Real-World Application
-
-- **SaaS Developers:** Need a simple way to embed a feedback widget into their web apps.
-- **Game Developers:** Can use this exact architecture to gather player feedback, bug reports, or community feature votes for games!
+1. **`User`**: Represents an app user or author submitting feature suggestions.
+2. **`FeatureRequest`**: Represents user-submitted suggestions linked directly to an author.
+3. **`Upvote` (Relationship)**: Enables users to vote on feature requests created by others.
 
 ---
 
-## 📐 Entity-Relationship Diagram (ERD)
+## 🛠️ API Architecture & Endpoints
 
-+-------------------+           +-----------------------+
-|      Project      |           |    FeatureRequest     |
-+-------------------+           +-----------------------+
-| id (PK)           | 1       * | id (PK)               |
-| name              |<---------| projectId (FK)        |
-| description       |           | title                 |
-| createdAt         |           | description           |
-+-------------------+           | votes                 |
-| status                |
-| createdAt             |
-+-----------------------+
+### 📡 Feature Request Endpoints
 
-## 🛠️ Planned API Endpoints
-
-### 1. Project Endpoints
-* **`POST /api/projects`**
-  * **Description:** Create a new project board.
-  * **Validation:** Requires valid `name` (min 3 chars).
-* **`GET /api/projects/:id`**
-  * **Description:** Retrieve a project and all its associated feature requests.
-
-### 2. Feature Request Endpoints
-* **`POST /api/projects/:projectId/requests`**
-  * **Description:** Submit a feature request for a specific project.
-  * **Validation:** Requires `title` (min 3 chars) and `description` (min 10 chars).
-* **`PATCH /api/requests/:id/vote`**
-  * **Description:** Upvote a specific feature request.
+| HTTP Method | Endpoint | Description | Validation / Status |
+| :--- | :--- | :--- | :--- |
+| **POST** ➕ | `/api/requests` | Submit a new feature request | Requires `title` (min 3 chars), `description` (min 5 chars), and valid `authorId` (UUID). Returns `201 Created` or `404 Not Found` if author doesn't exist. |
+| **GET** 📋 | `/api/requests` | Fetch all feature requests with author details | Returns `200 OK` with list of requests and embedded author objects. |
 
 ---
 
 ## 🛡️ Security & Quality Best Practices
 
-- **Strict Type Validation:** Zod schemas validate every incoming request body (`req.body`) before business logic executes.
-- **Sanitized Inputs:** Prevents injection attacks and invalid data types.
-- **Modular Architecture:** Clean separation between Routes, Controllers, Schemas, and Database operations.
-- **Error Handling:** Returns structured HTTP status codes (`400 Bad Request`, `404 Not Found`, `500 Internal Server Error`).
+- **Strict Input Validation:** Zod schemas validate every incoming request body (`req.body`) before business logic executes.
+- **Type-Safe Architecture:** Full ESM setup using `import type` guarantees complete compile-time safety across Express middlewares and Prisma queries.
+- **Centralized Error Handling:** Global Express middleware intercepts uncaught runtime exceptions to prevent process crashes and return structured JSON responses.
+- **Relational Integrity:** PostgreSQL foreign-key constraints managed via Prisma ensure orphaned requests cannot be created without a valid `User`.
 
 ---
 
-## 🚀 Setup & Installation (Local Development)
+## 📐 Entity-Relationship Diagram (ERD)
 
-1. Clone the repository:
-   ```bash
-   git clone git@github.com:Max-B80/feedback-flow-api.git
+```text
++-----------------------+           +-----------------------+
+|         User          |           |    FeatureRequest     |
++-----------------------+           +-----------------------+
+| id (PK, UUID)         | 1       * | id (PK, UUID)         |
+| email (Unique)        |<--------- | authorId (FK)         |
+| name                  |           | title                 |
+| createdAt             |           | description           |
++-----------------------+           | createdAt             |
+           ^                        +-----------------------+
+           |                                   ^
+           +========== (Upvoted By) ===========+
+                    (Many-to-Many)
+
+
+                    Tech Stack
+Runtime: Node.js (v24 LTS, ESM Mode)
+
+Framework: Express.js
+
+Language: TypeScript
+
+Database & ORM: PostgreSQL & Prisma v5.19.1
+
+Validation: Zod
+
+Execution/Dev Tools: tsx watch
+
+
+

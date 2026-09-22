@@ -1,16 +1,20 @@
 import express from "express";
 import requestRoutes from "./routes/request.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import { errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
-// 🔑 Read PORT from environment variables, fallback to 3000
 const PORT = process.env.PORT || 3000;
-// 1. Middleware to parse JSON bodies from incoming requests
+
 app.use(express.json());
 
-// 2. Register our Feature Request routes under the /api prefix
+// Register API Routes
+app.use("/api", userRoutes);
 app.use("/api", requestRoutes);
 
-// 3. Start the server
+// Global Error Handler (MUST be last)
+app.use(errorHandler);
+
 app.listen(PORT, () => {
-  console.log(`⚡️ [server]: Server is running at http://localhost:${PORT}`);
+  console.log(`⚡️ [server]: Server running at http://localhost:${PORT}`);
 });

@@ -1,0 +1,37 @@
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  createdAt DateTime @default(now())
+
+  // 1. One-to-Many: Feature requests authored by this user
+  authoredRequests FeatureRequest[] @relation("AuthorRelation")
+
+  // 2. Many-to-Many: Feature requests upvoted by this user
+  upvotedRequests  FeatureRequest[] @relation("UpvoteRelation")
+}
+
+model FeatureRequest {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  createdAt   DateTime @default(now())
+
+  // Link to the Author (User)
+  authorId String
+  author   User   @relation("AuthorRelation", fields: [authorId], references: [id])
+
+  // Link to Upvoters (Users)
+  upvotedBy User[] @relation("UpvoteRelation")
+}
